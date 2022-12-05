@@ -68,7 +68,6 @@ contract AntParts {
     }
 
     function _getDnaPrice(uint[15] memory _dna, uint _discountIndex) internal view returns (uint price) {
-        require(_discountIndex < 6, "Discount index out of bounds!");
         if (_dna[3] == 2) {
             require(_dna[0] != 2, "EOD and gas masks incompatible!");
             require(_dna[1] == 0, "Gas mask incompatible with optical!");
