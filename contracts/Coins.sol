@@ -159,7 +159,8 @@ contract Coins is ERC721, Ownable {
 
     function getFounder(address _addy) external view returns (uint value, bool isFounderCoinMinted, bool isDiscountUsed) {
         uint _founder = founderList[_addy];
-        value = _founder>>8;
+        uint rawValue = _founder>>8;
+        value = rawValue * 10**14;
         uint _founderBools = uint8(_founder);
         isDiscountUsed = _founderBools % 2 == 1 ? true : false;
         isFounderCoinMinted = _founderBools>>1 == 1 ? true : false;
