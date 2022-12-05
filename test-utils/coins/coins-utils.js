@@ -9,10 +9,7 @@ const addFounder = async (_coinsInstance, _accountToAdd, _amountToAdd, _sendingA
     await _coinsInstance.addFounder(_accountToAdd, _amountToAdd, { from: _sendingAccount });
     const isFounderAfter = await _coinsInstance.isOnFounderList(_accountToAdd);
     assert.equal(isFounderAfter, true, "should be founder");
-    const founder = await _coinsInstance.getFounder(_accountToAdd);
-    assert.equal(founder.value, _amountToAdd, "wrong founder value");
-    assert.equal(founder.isFounderCoinMinted, false, "founder coin not minted");
-    assert.equal(founder.isDiscountUsed, false, "discount is not used");
+    await assertFounder(_coinsInstance, _accountToAdd, _amountToAdd, false, false);
 }
 
 // 4 asserts
