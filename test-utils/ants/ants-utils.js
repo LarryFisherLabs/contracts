@@ -75,3 +75,4 @@ const incrementAntDna = (_isLegal, _lastAntDna) => {
 // create ant
 // create X ants
 // create promotional ant
+// withdraw
