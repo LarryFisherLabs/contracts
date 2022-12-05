@@ -1,8 +1,13 @@
+const assertIsOnFounderList = async (_coinsInstance, _account, _isOnFoundersList) => {
+    const isOnFounderList = await _coinsInstance.isOnFounderList(_account);
+    assert.equal(isOnFounderList, _isOnFoundersList, "Wrong is on founders list output!");
+}
+
 // 2 asserts
 const assertFounderBools = async (_coinsInstance, _account, _isFounderCoinMinted, _isDiscountUsed) => {
     const founder = await _coinsInstance.getFounder(_account);
-    assert.equal(founder.isFounderCoinMinted, _isFounderCoinMinted, "Wrong bool!");
-    assert.equal(founder.isDiscountUsed, _isDiscountUsed, "Wrong discount bool!");
+    assert.equal(founder[1], _isFounderCoinMinted, "Wrong bool!");
+    assert.equal(founder[2], _isDiscountUsed, "Wrong discount bool!");
 }
 
 // 3 asserts
@@ -54,6 +59,7 @@ const assertContractOwner = async (_coinsInstance, _ownerAccount) => {
 }
 
 module.exports = {
+    assertIsOnFounderList,
     assertFounderBools,
     assertFounder,
     assertCounters,
