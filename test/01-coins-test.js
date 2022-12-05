@@ -152,7 +152,7 @@ contract("Coins", (accounts) => {
         balance = balance + currentBalance;
     });
 
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 20; i++) {
         it("should function normally through " + (4 + 200 * (i + loopCount0 + loopCount1 + 1)) + " purchases even spread colors and accounts", async () => {
             const result = (i % 5) === 0 ? await buyXCoinsEvenDistr(coinsInstance, 200, prices, counts, accounts) : await buyXCoinsNoAssertsEvenDistr(coinsInstance, 200, prices, counts, accounts);
             prices = result.prices;
