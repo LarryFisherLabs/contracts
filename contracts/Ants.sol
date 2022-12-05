@@ -36,10 +36,10 @@ contract Ants is ERC721, Ownable, AntParts {
         }
     }
 
-    function _createAnt(uint104 _rawDna) private {
+    function _createAnt(uint104 _rawDna, address _recipient) private {
         ants.push(_rawDna);
-        _safeMint(msg.sender, COUNTER);
-        emit NewAnt(msg.sender, COUNTER);
+        _safeMint(_recipient, COUNTER);
+        emit NewAnt(_recipient, COUNTER);
         COUNTER++;
     }
 
@@ -81,7 +81,7 @@ contract Ants is ERC721, Ownable, AntParts {
         uint[15] memory dna = _createDna(_rawDna);
         uint price = _getDnaPrice(dna, 0);
         require(msg.value >= price, "Not enough ETH!");
-        _createAnt(_rawDna);
+        _createAnt(_rawDna, msg.sender);
         _incrementCounts(dna);
     }
 
@@ -93,9 +93,16 @@ contract Ants is ERC721, Ownable, AntParts {
         uint color = ICoins(coinAddr).getColor(_coinId);
         uint price = _getDnaPrice(dna, color + 1);
         require(msg.value >= price, "Not enough ETH!");
-        _createAnt(_rawDna);
+        _createAnt(_rawDna, msg.sender);
         _incrementCounts(dna);
         isDiscountUsedByID[_coinId] = true;
+    }
+
+    function createPromotionalAnt(address _recipient, uint104 _rawDna) external onlyOwner {
+        uint[15] memory dna = _createDna(_rawDna);
+        _getDnaPrice(dna, 0);
+        _createAnt(_rawDna, _recipient);
+        _incrementCounts(dna);
     }
 
     function getDiscountDnaPrice(uint _coinColor, uint _rawDna) external view returns (uint price) {
