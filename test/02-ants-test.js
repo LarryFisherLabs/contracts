@@ -2,17 +2,9 @@ const Ants = artifacts.require("Ants");
 
 contract("Ants", (accounts) => {
     let antsInstance;
-    let validAnts = [
-        000000000000020300040101000002,
-        060302020201010101000000010200,
-    ];
+
     let ownedAnts = [];
-    let invalidAnts = [
-        020101020100000000010000000000,
-        000101020100000000010000000000,
-        000001020100000000010000000000,
-        000001020100000000000000000000,
-    ];
+
     it("should purchase ant", async () => {
         antsInstance = await Ants.deployed();
         const countBefore = await antsInstance.COUNTER();
