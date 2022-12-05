@@ -8,9 +8,9 @@ const assertFounderBools = async (_coinsInstance, _account, _isFounderCoinMinted
 // 3 asserts
 const assertFounder = async (_coinsInstance, _account, _value, _isFounderCoinMinted, _isDiscountUsed) => {
     const founder = await _coinsInstance.getFounder(_account);
-    assert.equal(founder.value, _value, "Wrong founder value!");
-    assert.equal(founder.isFounderCoinMinted, _isFounderCoinMinted, "Wrong bool!");
-    assert.equal(founder.isDiscountUsed, _isDiscountUsed, "Wrong discount bool!");
+    assert.equal(founder[0], _value, "Wrong founder value!");
+    assert.equal(founder[1], _isFounderCoinMinted, "Wrong bool!");
+    assert.equal(founder[2], _isDiscountUsed, "Wrong discount bool!");
 }
 
 // 5 asserts
@@ -28,13 +28,10 @@ const assertCoin = async (_coinsInstance, _id, _value, _color, _owner) => {
     const coin = await _coinsInstance.getCoin(_id);
     const owner = await _coinsInstance.ownerOf(_id);
     const uri = await _coinsInstance.tokenURI(_id);
-    const color = await _coinsInstance.getColor(_id);
-    assert.equal(coin.id, _id, "Wrong ID!");
-    assert.equal(coin.value, _value, "Wrong value!");
-    assert.equal(coin.color, _color, "Wrong color!");
+    assert.equal(coin[0], _value, "Wrong value!");
+    assert.equal(coin[1], _color, "Wrong color!");
     assert.equal(owner, _owner, "Wrong coin owner!");
     assert.equal(uri.toString(), "localhost:3001/coins/" + _id, "Wrong token URI!");
-    assert.equal(color, _color, "Wrong token color!");
 }
 
 // 4 asserts
