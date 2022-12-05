@@ -1,14 +1,16 @@
 const { fromWei, toWei, getBalance } = require("../utils");
-const { assertCoin, assertCounters, assertFounder, assertFounderBools, assertPrices } = require("./coins-asserts");
+const { assertCoin, assertCounters, assertFounder, assertFounderBools, assertPrices, assertIsOnFounderList } = require("./coins-asserts");
 const { badBuySkimp } = require("./coins-reversion");
+
+// update fee
+// update baseuri
+// withdraw
 
 // 5 asserts
 const addFounder = async (_coinsInstance, _accountToAdd, _amountToAdd, _sendingAccount) => {
-    const isFounderBefore = await _coinsInstance.isOnFounderList(_accountToAdd);
-    assert.equal(isFounderBefore, false, "shouldn't be founder");
+    await assertIsOnFounderList(_coinsInstance, _accountToAdd, false);
     await _coinsInstance.addFounder(_accountToAdd, _amountToAdd, { from: _sendingAccount });
-    const isFounderAfter = await _coinsInstance.isOnFounderList(_accountToAdd);
-    assert.equal(isFounderAfter, true, "should be founder");
+    await assertIsOnFounderList(_coinsInstance, _accountToAdd, true);
     await assertFounder(_coinsInstance, _accountToAdd, _amountToAdd, false, false);
 }
 
