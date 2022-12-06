@@ -3,10 +3,22 @@ const { assertCoin, assertCounters, assertFounder, assertFounderBools, assertPri
 const { badBuySkimp } = require("./coins-reversion");
 
 // update fee
+// update owner
 // update baseuri
-// withdraw
+const withdrawAndDistribute = async (_coinsInstance, _accounts, _maxAccNum, _sendingAccount) => {
+    const currentBalance = await getBalance(_coinsInstance.address);
+    await _coinsInstance.withdraw({ from: _sendingAccount });
+    for (let i = 0; i < _maxAccNum; i++) {
+        await web3.eth.sendTransaction({ from: _sendingAccount, to: _accounts[i], value: toWei(currentBalance / _maxAccNum) });
+    }
+    return currentBalance;
+}
 
-// 5 asserts
+
+// assert Coins.isOnFounderList(addy) returns false
+// add addy to founderlist
+// assert Coins.isOnFounderList(addy) returns true
+// assert founder details
 const addFounder = async (_coinsInstance, _accountToAdd, _amountToAdd, _sendingAccount) => {
     await assertIsOnFounderList(_coinsInstance, _accountToAdd, false);
     await _coinsInstance.addFounder(_accountToAdd, _amountToAdd, { from: _sendingAccount });
@@ -35,11 +47,7 @@ const buyCoinAllAsserts = async (_coinsInstance, _sendingAccount, _sendingValue,
     if (_isDiscounted) {
         await assertFounderBools(_coinsInstance, _sendingAccount, true, false);
     }
-    if (_isExact) {
-        await _coinsInstance.createExactCoin(_color, { from: _sendingAccount, value: _sendingValue });
-    } else {
-        await _coinsInstance.createCoin({ from: _sendingAccount, value: _sendingValue });
-    }
+    await buyCoinNoAsserts(_coinsInstance, _sendingAccount, _sendingValue, _color, _isExact)
     if (_isDiscounted) {
         await assertFounderBools(_coinsInstance, _sendingAccount, true, true);
         _sendingValue = fromWei(_sendingValue) * 2;
@@ -84,14 +92,18 @@ const logContractState = (_stepName, _prices, _counts, _balance) => {
         "   Contract Balance: " + _balance + " Eth");
 }
 
-const buyXCoinsWAssertsEvenDistr = async (_coinsInstance, _X, _prices, _counts, _accounts) => {
+const buyXCoinsEvenDistr = async (_coinsInstance, _X, _prices, _counts, _accounts, _isAssertingAll) => {
     for (let i = 0; i < _X; i++) {
         const color = i % 4;
-        const accIndex = i % 8;
+        const accIndex = i % 15;
         const goodVal = _prices[color] / 1000;
         // use is exact of every five cycles
         const isExact = (i % 5) === 1 ? true : false;
-        await buyCoinAllAsserts(_coinsInstance, _accounts[accIndex], toWei(goodVal), _counts[0], color, false, isExact);
+        if (_isAssertingAll) {
+            await buyCoinAllAsserts(_coinsInstance, _accounts[accIndex], toWei(goodVal), _counts[0], color, false, isExact);
+        } else {
+            await buyCoinNoAsserts(_coinsInstance, _accounts[accIndex], toWei(goodVal), color, isExact);
+        }
         _counts[0]++;
         _counts[color + 1]++;
         if (_counts[0] % 10 === 0) {
@@ -102,41 +114,21 @@ const buyXCoinsWAssertsEvenDistr = async (_coinsInstance, _X, _prices, _counts, 
         if (_counts[color + 1] % 5 === 0) {
             _prices[color] = _prices[color] + color + 1;
         }
-        if (i % 10 === 1) {
-            const badVal = (_prices[color] * 10 - 1) / 10000;
-            await badBuySkimp(_coinsInstance, _accounts[accIndex], toWei(badVal), color);
+        if (_isAssertingAll) {
+            if (i % 10 === 1) {
+                const badVal = (_prices[color] * 10 - 1) / 10000;
+                await badBuySkimp(_coinsInstance, _accounts[accIndex], toWei(badVal), color);
+            }
+            await assertCounters(_coinsInstance, _counts[0], _counts[1], _counts[2], _counts[3], _counts[4]);
+            await assertPrices(_coinsInstance, false, toWei(_prices[0] / 1000), toWei(_prices[1] / 1000), toWei(_prices[2] / 1000), toWei(_prices[3] / 1000));
         }
+    }
+    if (_isAssertingAll) {
+        console.log("With asserts!");
+    } else {
         await assertCounters(_coinsInstance, _counts[0], _counts[1], _counts[2], _counts[3], _counts[4]);
         await assertPrices(_coinsInstance, false, toWei(_prices[0] / 1000), toWei(_prices[1] / 1000), toWei(_prices[2] / 1000), toWei(_prices[3] / 1000));
     }
-    console.log("With asserts!");
-    return {
-        prices: _prices,
-        counts: _counts,
-    };
-}
-
-const buyXCoinsNoAssertsEvenDistr = async (_coinsInstance, _X, _prices, _counts, _accounts) => {
-    for (let i = 0; i < _X; i++) {
-        const color = i % 4;
-        const accIndex = i % 8;
-        const goodVal = _prices[color] / 1000;
-        // use is exact of every five cycles
-        const isExact = (i % 5) === 1 ? true : false;
-        await buyCoinNoAsserts(_coinsInstance, _accounts[accIndex], toWei(goodVal), color, isExact);
-        _counts[0]++;
-        _counts[color + 1]++;
-        if (_counts[0] % 10 === 0) {
-            for (let j = 0; j < 4; j++) {
-                _prices[j] = _prices[j] + 1;
-            }
-        }
-        if (_counts[color + 1] % 5 === 0) {
-            _prices[color] = _prices[color] + color + 1;
-        }
-    }
-    await assertCounters(_coinsInstance, _counts[0], _counts[1], _counts[2], _counts[3], _counts[4]);
-    await assertPrices(_coinsInstance, false, toWei(_prices[0] / 1000), toWei(_prices[1] / 1000), toWei(_prices[2] / 1000), toWei(_prices[3] / 1000));
     return {
         prices: _prices,
         counts: _counts,
@@ -144,10 +136,10 @@ const buyXCoinsNoAssertsEvenDistr = async (_coinsInstance, _X, _prices, _counts,
 }
 
 module.exports = {
+    withdrawAndDistribute,
     addFounder,
     buyFounderCoin,
     buyCoin: buyCoinAllAsserts,
     logContractState,
-    buyXCoinsEvenDistr: buyXCoinsWAssertsEvenDistr,
-    buyXCoinsNoAssertsEvenDistr,
+    buyXCoinsEvenDistr,
 };
