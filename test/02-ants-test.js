@@ -1,9 +1,40 @@
+const { assertContractOwner } = require("../test-utils/ants/ants-asserts");
+
 const Ants = artifacts.require("Ants");
 
 contract("Ants", (accounts) => {
     let antsInstance;
 
     let ownedAnts = [];
+
+    const maxIndexByRarity = [10000, 3000, 1000, 300, 80, 3];
+
+    let partCounters = [];
+    partCounters[0] = [maxIndexByRarity[0], maxIndexByRarity[3], maxIndexByRarity[4], maxIndexByRarity[1], maxIndexByRarity[3], maxIndexByRarity[3], maxIndexByRarity[4], maxIndexByRarity[1], maxIndexByRarity[1], maxIndexByRarity[2], maxIndexByRarity[2], maxIndexByRarity[3], maxIndexByRarity[2], maxIndexByRarity[2], maxIndexByRarity[2]];
+    partCounters[1] = [maxIndexByRarity[0], maxIndexByRarity[1], maxIndexByRarity[3], maxIndexByRarity[4], maxIndexByRarity[2]];
+    partCounters[2] = [maxIndexByRarity[0], maxIndexByRarity[3], maxIndexByRarity[4]];
+    partCounters[3] = [maxIndexByRarity[0], maxIndexByRarity[3], maxIndexByRarity[4]];
+    partCounters[4] = [maxIndexByRarity[0], maxIndexByRarity[2], maxIndexByRarity[3]];
+    partCounters[5] = [maxIndexByRarity[0], maxIndexByRarity[3]];
+    partCounters[6] = [maxIndexByRarity[3], maxIndexByRarity[3], maxIndexByRarity[0]];
+    partCounters[7] = [maxIndexByRarity[4], maxIndexByRarity[4], maxIndexByRarity[4], maxIndexByRarity[0], maxIndexByRarity[3], maxIndexByRarity[4], maxIndexByRarity[4], maxIndexByRarity[2], maxIndexByRarity[2], maxIndexByRarity[1], maxIndexByRarity[2], maxIndexByRarity[2]];
+    partCounters[8] = [maxIndexByRarity[0], maxIndexByRarity[3], maxIndexByRarity[3], maxIndexByRarity[3]];
+    partCounters[9] = [maxIndexByRarity[4], maxIndexByRarity[2], maxIndexByRarity[3], maxIndexByRarity[3], maxIndexByRarity[0], maxIndexByRarity[0], maxIndexByRarity[4], maxIndexByRarity[1], maxIndexByRarity[1], maxIndexByRarity[3], maxIndexByRarity[3], maxIndexByRarity[3], maxIndexByRarity[3]];
+    partCounters[10] = [maxIndexByRarity[4], maxIndexByRarity[0]];
+    partCounters[11] = [maxIndexByRarity[4], maxIndexByRarity[0]];
+    partCounters[12] = [maxIndexByRarity[0], maxIndexByRarity[4], maxIndexByRarity[2], maxIndexByRarity[3], maxIndexByRarity[4], maxIndexByRarity[3], maxIndexByRarity[4], maxIndexByRarity[3], maxIndexByRarity[3], maxIndexByRarity[3], maxIndexByRarity[4]];
+    partCounters[13] = [maxIndexByRarity[0], maxIndexByRarity[3], maxIndexByRarity[4], maxIndexByRarity[3], maxIndexByRarity[3], maxIndexByRarity[3], maxIndexByRarity[4], maxIndexByRarity[3], maxIndexByRarity[4], maxIndexByRarity[3], maxIndexByRarity[3], maxIndexByRarity[3], maxIndexByRarity[3], maxIndexByRarity[3], maxIndexByRarity[3], maxIndexByRarity[4]];
+    partCounters[14] = [maxIndexByRarity[4], maxIndexByRarity[3], maxIndexByRarity[0]];
+
+    it("should have proper name, symbol and owner", async () => {
+        antsInstance = await Ants.deployed();
+        const name = await antsInstance.name();
+        const symbol = await antsInstance.symbol();
+    
+        assert.equal(name, "ArmyAntsToken", "name is not right");
+        assert.equal(symbol, "AAT", "symbol is not right");
+        await assertContractOwner(antsInstance, accounts[0]);
+    });
 
     it("should purchase ant", async () => {
         antsInstance = await Ants.deployed();
