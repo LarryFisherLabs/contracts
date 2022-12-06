@@ -12,8 +12,18 @@ const getBalance = async (_address) => {
     return fromWei(balance);
 }
 
+const breakUpDna = (_dna, _sectionCount) => {
+    let dna = [];
+    for (let i = 0; i < _sectionCount; i++) {
+        const attribute = _dna / 100**(_sectionCount - 1 - i) % 100;
+        dna.push(attribute);
+    }
+    return dna;
+}
+
 module.exports = {
     toWei,
     fromWei,
     getBalance,
+    breakUpDna,
 };
