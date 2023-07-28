@@ -33,8 +33,8 @@ const assertCoin = async (_coinsInstance, _id, _value, _color, _owner) => {
     const coin = await _coinsInstance.getCoin(_id);
     const owner = await _coinsInstance.ownerOf(_id);
     const uri = await _coinsInstance.tokenURI(_id);
-    assert.equal(coin[0], _value, "Wrong value!");
-    assert.equal(coin[1], _color, "Wrong color!");
+    assert.equal(coin[0].toString(), _value.toString(), "Wrong value!");
+    assert.equal(coin[1].toString(), _color.toString(), "Wrong color!");
     assert.equal(owner, _owner, "Wrong coin owner!");
     assert.equal(uri.toString(), "localhost:3001/coins/" + _id, "Wrong token URI!");
 }

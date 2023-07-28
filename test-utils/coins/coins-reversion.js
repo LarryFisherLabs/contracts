@@ -63,17 +63,6 @@ const addFounderWNoValue = async (_coinsInstance, _accountToAdd, _valueToAdd, _s
 const founderBadBuyCoinOrder = async (_coinsInstance, _sendingAccount) => {
     let errMsg = "";
     try {
-        await _coinsInstance.createCoin({ from: _sendingAccount, value: toWei("500") });
-    } catch (err) {
-        if (err.reason) {
-            errMsg = err.reason;
-        } else {
-            throw err;
-        }
-    }
-    assert.equal(errMsg, "Mint founder coin first!", "missing error");
-    errMsg = "";
-    try {
         await _coinsInstance.createExactCoin(0, { from: _sendingAccount, value: toWei("500") });
     } catch (err) {
         if (err.reason) {
@@ -117,22 +106,7 @@ const nonFounderBadBuyFC = async (_coinsInstance, _sendingAccount) => {
 
 // 1-2 asserts
 const badBuySkimp = async (_coinsInstance, _sendingAccount, _sendingValue, _color = 0) => {
-    let assertCount = 0;
     let errMsg = "";
-    if (_color === 0) {
-        try {
-            await _coinsInstance.createCoin({ from: _sendingAccount, value: _sendingValue });
-        } catch (err) {
-            if (err.reason) {
-                errMsg = err.reason;
-            } else {
-                throw err;
-            }
-        }
-        assert.equal(errMsg, "Not enough Eth!", "missing error");
-        assertCount++;
-        errMsg = "";
-    }
     try {
         await _coinsInstance.createExactCoin(_color, { from: _sendingAccount, value: _sendingValue });
     } catch (err) {
@@ -143,9 +117,6 @@ const badBuySkimp = async (_coinsInstance, _sendingAccount, _sendingValue, _colo
         }
     }
     assert.equal(errMsg, "Not enough eth!", "missing error");
-    assertCount++;
-    const count = _color === 0 ? 2 : 1;
-    assert.equal(assertCount, count, "Wrong assert count!");
 }
 
 // 1 assert

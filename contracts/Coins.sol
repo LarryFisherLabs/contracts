@@ -10,12 +10,12 @@ contract Coins is ERC721, Ownable {
 
     uint80 COUNTERS;
     uint64 minFee = 0.001 ether;
-    string baseURI = "localhost:3001/coins/";
+    string public baseURI = "https://nft-api-bphk.onrender.com/1/coins/";
 
     mapping(address => uint) founderList;
     uint40[] public coins;
 
-    event NewCoin(address indexed owner, uint newCoinId, bool hasPriceChanged);
+    event NewCoin(address indexed owner, uint newCoinId);
 
     function _baseURI() internal view override returns (string memory) {
         return baseURI;
@@ -26,7 +26,7 @@ contract Coins is ERC721, Ownable {
         uint _totalCount = uint16(_COUNTERS);
         uint _colorCount = uint16(_COUNTERS>>(16 * (_color + 1)));
         uint _minFee = minFee;
-        return _minFee * (_color + 1) + _totalCount / 10 * _minFee + _colorCount / 5 * _minFee * (_color + 1);
+        return _minFee * (_color + 1) + _totalCount / 9 * _minFee + _colorCount / 4 * _minFee * (_color + 1);
     }
 
     function _getTierPrices(bool _isDiscounted) internal view returns (uint[4] memory prices) {
@@ -48,7 +48,6 @@ contract Coins is ERC721, Ownable {
         uint _COUNTERS = COUNTERS;
         uint[4] memory _colorCounters = [uint16(_COUNTERS>>16), uint16(_COUNTERS>>32), uint16(_COUNTERS>>48), _COUNTERS>>64];
         uint _totalCount = uint16(_COUNTERS);
-        require(_totalCount < 30000);
         uint newCoin = uint32(_miniVal);
         newCoin |= _color<<32;
         coins.push(uint40(newCoin));
@@ -62,20 +61,7 @@ contract Coins is ERC721, Ownable {
             _newCounters |= _colorCounters[i]<<(16 * (i + 1));
         }
         COUNTERS = uint80(_newCounters);
-        bool _hasPriceChanged = false;
-        if (_color < 4) {
-            if (_colorCounters[_color] % 5 == 0) {
-                _hasPriceChanged = true;
-            }
-        }
-        if (!_hasPriceChanged && _totalCount % 10 == 0) {
-            _hasPriceChanged = true;
-        }
-        emit NewCoin(msg.sender, _totalCount - 1, _hasPriceChanged);
-    }
-
-    function updateFee(uint256 _fee) external onlyOwner {
-        minFee = uint64(_fee);
+        emit NewCoin(msg.sender, _totalCount - 1);
     }
 
     function updateBaseURI(string memory _newURI) external onlyOwner {
@@ -114,6 +100,9 @@ contract Coins is ERC721, Ownable {
             if (_founderBools % 2 == 0) {
                 _discount = 2;
             }
+        }
+        if (_discount == 1) {
+            require(uint16(COUNTERS) < 3000, "Coin limit reached!");
         }
         require(msg.value >= _getTierPrice(_color) / _discount, "Not enough eth!");
         _createCoin(msg.value * _discount / 10**14, _color);

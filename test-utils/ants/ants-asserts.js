@@ -1,6 +1,6 @@
 // assert rarity prices
 
-const { breakUpDna } = require("../utils");
+const { fromWei } = require("../utils");
 
 const assertPartStock = async (_antsInstance, _secIndex, _partIndex, _stockVal) => {
     const stockVal = await _antsInstance.getPartInventory(_secIndex, _partIndex);
@@ -18,12 +18,7 @@ const assertIsDiscountUsed = async (_antsInstance, _coinId, _isDiscountUsed) => 
 }
 
 const assertPrice = async (_antsInstance, _antDna, _price, _discountIndex) => {
-    let price;
-    if (_discountIndex === 0) {
-        price = await _antsInstance.getDnaPrice(_antDna);
-    } else {
-        price = await _antsInstance.getDiscountDnaPrice(_discountIndex - 1, _antDna);
-    }
+    const price = fromWei(await _antsInstance.getDnaPrice(_antDna, _discountIndex));
     assert.equal(price, _price, "Wrong price!");
 }
 
@@ -38,10 +33,9 @@ const assertAnt = async (_antsInstance, _antId, _dna, _rarities, _owner) => {
     const ant = await _antsInstance.getAnt(_antId);
     const owner = await _antsInstance.ownerOf(_antId);
     const uri = await _antsInstance.tokenURI(_antId);
-    const dna = breakUpDna(_dna, 15);
     for (let i = 0; i < 15; i++) {
-        assert.equal(ant[0][i], dna[i], "Wrong attribute!");
-        assert.equal(ant[1][i], rarities[i], "Wrong rarity!");
+        assert.equal(ant[0][i], _dna[i], "Wrong attribute!");
+        assert.equal(ant[1][i], _rarities[i], "Wrong rarity!");
     }
     assert.equal(owner, _owner, "Wrong ant owner!");
     assert.equal(uri.toString(), "localhost:3001/ants/" + _antId, "Wrong token URI!");

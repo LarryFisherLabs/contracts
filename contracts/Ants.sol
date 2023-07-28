@@ -7,21 +7,23 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "./AntParts.sol";
 
 interface ICoins {
-    function getColor(uint) external view returns (uint);
+    function getCoin(uint) external view returns (uint, uint);
     function ownerOf(uint) external view returns (address);
 }
 
 contract Ants is ERC721, Ownable, AntParts {
     uint16 public COUNTER;
     address coinAddr;
-    string baseURI = "localhost:3001/ants/";
+    string public baseURI = "https://nft-api-bphk.onrender.com/1/ants/";
+    uint64 public nameFee = .0025 ether;
 
     constructor(address _coinAddr) ERC721("ArmyAnts", "AA") {
         coinAddr = _coinAddr;
     }
 
-    uint104[] public ants;
+    uint120[] public ants;
 
+    mapping(uint16 => string) names;
     mapping(uint16 => bool) isDiscountUsedByID;
 
     event NewAnt(address indexed owner, uint id);
@@ -30,13 +32,20 @@ contract Ants is ERC721, Ownable, AntParts {
         return baseURI;
     }
 
-    function _createDna(uint _rawDna) internal pure returns (uint[15] memory resultDna) {
-        for (uint i; i < 15; ++i) {
+    function _createDna(uint _rawDna) internal pure returns (uint[18] memory resultDna) {
+        for (uint i; i < 18; ++i) {
             resultDna[i] = _rawDna / 100 ** (14 - i) % 100;
         }
     }
 
-    function _createAnt(uint104 _rawDna, address _recipient) private {
+    function _createRawDna(uint[18] memory _dna) internal pure returns (uint120 resultDna) {
+        for (uint i; i < 18; ++i) {
+            resultDna = uint120(resultDna * 100 + _dna[i]);
+        }
+    }
+
+    function _createAnt(uint120 _rawDna, address _recipient) private {
+        require(COUNTER < 10000, "Ant limit reached!");
         ants.push(_rawDna);
         _safeMint(_recipient, COUNTER);
         emit NewAnt(_recipient, COUNTER);
@@ -56,68 +65,57 @@ contract Ants is ERC721, Ownable, AntParts {
         baseURI = _newURI;
     }
 
-    function updateMaxStock(uint _maxStockIndex, uint16 _newMaxStock) external onlyOwner {
-        _updateMaxStock(_maxStockIndex, _newMaxStock);
-    }
-
-    function updatePriceScale(uint _priceScaleIndex, uint16 _newPriceScale) external onlyOwner {
-        _updatePriceScale(_priceScaleIndex, _newPriceScale);
-    }
-
-    function updateMinFee(uint64 _minFee) external onlyOwner {
-        _updateMinFee(_minFee);
-    }
-
-    function updatePartRarity(uint _secIndex, uint _partIndex, uint8 _rarity) external onlyOwner {
-        _updatePartRarity(_secIndex, _partIndex, _rarity);
-    }
-
     function updateCoinAddr(address _coinAddr) external onlyOwner {
         coinAddr = _coinAddr;
     }
 
-    function createAnt(uint104 _rawDna) external payable {
-        require(COUNTER < 60000, "Ant limit reached!");
-        uint[15] memory dna = _createDna(_rawDna);
-        uint price = _getDnaPrice(dna, 0);
-        require(msg.value >= price, "Not enough ETH!");
-        _createAnt(_rawDna, msg.sender);
-        _incrementCounts(dna);
+    function updateNameFee(uint64 _nameFee) external onlyOwner {
+        nameFee = _nameFee;
     }
 
-    function createDiscountAnt(uint16 _coinId, uint104 _rawDna) external payable {
-        require(COUNTER < 60000, "Ant limit reached!");
+    function updateRarityPriceScale(uint _index, uint16 _newPriceScale) external onlyOwner {
+        priceScaleByRarity[_index] = _newPriceScale;
+    }
+
+    function changeName(uint16 _id, string memory _newName) external payable {
+        require(msg.sender == ownerOf(_id), "Must be owner of ant!");
+        require(msg.value >= nameFee, "Not enough ETH!");
+        names[_id] = _newName;
+    }
+
+    function createAnt(uint[18] memory _dna) external payable {
+        uint120 rawDna = _createRawDna(_dna);
+        uint price = _getDnaPrice(_dna, 0);
+        require(msg.value >= price, "Not enough ETH!");
+        _createAnt(rawDna, msg.sender);
+        _incrementCounts(_dna);
+    }
+
+    function createDiscountAnt(uint16 _coinId, uint[18] memory _dna) external payable {
         require(ICoins(coinAddr).ownerOf(_coinId) == msg.sender, "You don't own that coin!");
         require(!isDiscountUsedByID[_coinId], "Discount already used!");
-        uint[15] memory dna = _createDna(_rawDna);
-        uint color = ICoins(coinAddr).getColor(_coinId);
-        uint price = _getDnaPrice(dna, color + 1);
+        uint120 rawDna = _createRawDna(_dna);
+        (, uint color) = ICoins(coinAddr).getCoin(_coinId);
+        uint price = _getDnaPrice(_dna, color + 1);
         require(msg.value >= price, "Not enough ETH!");
-        _createAnt(_rawDna, msg.sender);
-        _incrementCounts(dna);
+        _createAnt(rawDna, msg.sender);
+        _incrementCounts(_dna);
         isDiscountUsedByID[_coinId] = true;
     }
 
-    function createPromotionalAnt(address _recipient, uint104 _rawDna) external onlyOwner {
-        uint[15] memory dna = _createDna(_rawDna);
-        _getDnaPrice(dna, 0);
-        _createAnt(_rawDna, _recipient);
-        _incrementCounts(dna);
+    function createPromotionalAnt(address _recipient, uint[18] memory _dna) external onlyOwner {
+        uint120 rawDna = _createRawDna(_dna);
+        _createAnt(rawDna, _recipient);
     }
 
-    function getDiscountDnaPrice(uint _coinColor, uint _rawDna) external view returns (uint price) {
-        require(_coinColor < 5, "Color index out of bounds!");
-        uint[15] memory dna = _createDna(_rawDna);
-        price = _getDnaPrice(dna, _coinColor + 1);
+    function getDnaPrice(uint[18] memory _dna, uint _discountIndex) external view returns (uint price) {
+        require(_discountIndex < 6, "Discount index out of bounds!");
+        price = _getDnaPrice(_dna, _discountIndex);
     }
 
-    function getDnaPrice(uint _rawDna) external view returns (uint price) {
-        uint[15] memory dna = _createDna(_rawDna);
-        price = _getDnaPrice(dna, 0);
-    }
-
-    function getAnt(uint _id) external view returns (uint[15] memory dna, uint[15] memory rarities) {
+    function getAnt(uint16 _id) external view returns (uint[18] memory dna, uint[18] memory rarities, string memory antName) {
         dna = _createDna(ants[_id]);
         rarities = _getRarities(dna);
+        antName = names[_id];
     }
 }

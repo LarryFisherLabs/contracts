@@ -1,6 +1,7 @@
+const { toWei } = require("../utils");
 const { assertCounter, assertAnt, assertPrices, assertIsDiscountUsed, assertPrice } = require("./ants-asserts");
 
-const maxIndexByRarity = [10000, 3000, 1000, 300, 80, 3];
+const maxIndexByRarity = [420, 42];
 const priceScaleByRarity = [1, 2, 3, 8, 15, 2500];
 
 let partRarities = [];
@@ -80,17 +81,20 @@ const incrementAntDna = (_isLegal, _lastAntDna) => {
 
 const createAnt = async (_antsInstance, _sendingAccount, _sendingValue, _dna, _rarities, _count) => {
     await assertCounter(_antsInstance, _count);
-    await assertPrices(_antsInstance, _dna, _sendingValue);
-    await _antsInstance.createAnt(_dna, { from: _sendingAccount, value: _sendingValue });
+    await assertPrice(_antsInstance, _dna, _sendingValue, 0);
+    await _antsInstance.createAnt(_dna, { from: _sendingAccount, value: toWei(_sendingValue) });
     await assertCounter(_antsInstance, _count + 1);
     await assertAnt(_antsInstance, _count, _dna, _rarities, _sendingAccount);
 }
 
 const createDiscountAnt = async (_antsInstance, _sendingAccount, _sendingValue, _dna, _rarities, _count, _coinId, _coinColor) => {
     await assertCounter(_antsInstance, _count);
-    await assertPrice(_antsInstance, _dna, _sendingValue);
+    await assertPrice(_antsInstance, _dna, _sendingValue, _coinColor + 1);
     await assertIsDiscountUsed(_antsInstance, _coinId, false);
-    await _antsInstance.createDiscountAnt(_coinId, _dna, { from: _sendingAccount, value: _sendingValue });
+    await _antsInstance.createDiscountAnt(_coinId, _dna, { from: _sendingAccount, value: toWei(_sendingValue) });
+    await assertCounter(_antsInstance, _count + 1);
+    await assertAnt(_antsInstance, _count, _dna, _rarities, _sendingAccount);
+    await assertIsDiscountUsed(_antsInstance, _coinId, true);
 }
 // create ant
 // create X ants
