@@ -1,10 +1,16 @@
 // SPDX-License-Identifier: GPL-3.0
 
+// ###########################################################
+// !!! UPDATE BASE_URI AND ERC721 NAME/SYMBOL ON MIGRATION !!!
+// ###########################################################
+
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "./AntParts.sol";
+
+string constant BASE_URI = "https://nft-api-bphk.onrender.com/1/ants/";
 
 interface ICoins {
     function getCoin(uint) external view returns (uint, uint);
@@ -14,10 +20,10 @@ interface ICoins {
 contract Ants is ERC721, Ownable, AntParts {
     uint16 public COUNTER;
     address coinAddr;
-    string public baseURI = "https://nft-api-bphk.onrender.com/1/ants/";
+    string public baseURI = BASE_URI;
     uint64 public nameFee = .0025 ether;
 
-    constructor(address _coinAddr) ERC721("ArmyAnts", "AA") {
+    constructor(address _coinAddr) ERC721("Army Ants", "AA") {
         coinAddr = _coinAddr;
     }
 
@@ -32,14 +38,14 @@ contract Ants is ERC721, Ownable, AntParts {
         return baseURI;
     }
 
-    function _createDna(uint _rawDna) internal pure returns (uint[18] memory resultDna) {
-        for (uint i; i < 18; ++i) {
+    function _createDna(uint _rawDna) internal pure returns (uint[17] memory resultDna) {
+        for (uint i; i < 17; ++i) {
             resultDna[i] = _rawDna / 100 ** (14 - i) % 100;
         }
     }
 
-    function _createRawDna(uint[18] memory _dna) internal pure returns (uint120 resultDna) {
-        for (uint i; i < 18; ++i) {
+    function _createRawDna(uint[17] memory _dna) internal pure returns (uint120 resultDna) {
+        for (uint i; i < 17; ++i) {
             resultDna = uint120(resultDna * 100 + _dna[i]);
         }
     }
@@ -83,7 +89,7 @@ contract Ants is ERC721, Ownable, AntParts {
         names[_id] = _newName;
     }
 
-    function createAnt(uint[18] memory _dna) external payable {
+    function createAnt(uint[17] memory _dna) external payable {
         uint120 rawDna = _createRawDna(_dna);
         uint price = _getDnaPrice(_dna, 0);
         require(msg.value >= price, "Not enough ETH!");
@@ -91,7 +97,7 @@ contract Ants is ERC721, Ownable, AntParts {
         _incrementCounts(_dna);
     }
 
-    function createDiscountAnt(uint16 _coinId, uint[18] memory _dna) external payable {
+    function createDiscountAnt(uint16 _coinId, uint[17] memory _dna) external payable {
         require(ICoins(coinAddr).ownerOf(_coinId) == msg.sender, "You don't own that coin!");
         require(!isDiscountUsedByID[_coinId], "Discount already used!");
         uint120 rawDna = _createRawDna(_dna);
@@ -103,17 +109,17 @@ contract Ants is ERC721, Ownable, AntParts {
         isDiscountUsedByID[_coinId] = true;
     }
 
-    function createPromotionalAnt(address _recipient, uint[18] memory _dna) external onlyOwner {
+    function createPromotionalAnt(address _recipient, uint[17] memory _dna) external onlyOwner {
         uint120 rawDna = _createRawDna(_dna);
         _createAnt(rawDna, _recipient);
     }
 
-    function getDnaPrice(uint[18] memory _dna, uint _discountIndex) external view returns (uint price) {
+    function getDnaPrice(uint[17] memory _dna, uint _discountIndex) external view returns (uint price) {
         require(_discountIndex < 6, "Discount index out of bounds!");
         price = _getDnaPrice(_dna, _discountIndex);
     }
 
-    function getAnt(uint16 _id) external view returns (uint[18] memory dna, uint[18] memory rarities, string memory antName) {
+    function getAnt(uint16 _id) external view returns (uint[17] memory dna, uint[17] memory rarities, string memory antName) {
         dna = _createDna(ants[_id]);
         rarities = _getRarities(dna);
         antName = names[_id];

@@ -1,16 +1,22 @@
 // SPDX-License-Identifier: GPL-3.0
 
+// ###########################################################
+// !!! UPDATE BASE_URI AND ERC721 NAME/SYMBOL ON MIGRATION !!!
+// ###########################################################
+
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+string constant BASE_URI = "https://nft-api-bphk.onrender.com/1/coins/";
+
 contract Coins is ERC721, Ownable {
-    constructor() ERC721("BitCowArcadeToken", "BCAT") {}
+    constructor() ERC721("Arcade Token", "AT") {}
 
     uint80 COUNTERS;
     uint64 minFee = 0.001 ether;
-    string public baseURI = "https://nft-api-bphk.onrender.com/1/coins/";
+    string public baseURI = BASE_URI;
 
     mapping(address => uint) founderList;
     uint40[] public coins;

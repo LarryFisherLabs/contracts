@@ -4,8 +4,8 @@ pragma solidity ^0.8.0;
 
 contract AntParts {
 
-    uint8[][18] partRarities;
-    uint16[][18] partCounts;
+    uint8[][17] partRarities;
+    uint16[][17] partCounts;
     uint16[4] maxStockByRarity;
     uint16[6] priceScaleByRarity;
     uint64 minPartFee = .0009 ether;
@@ -21,8 +21,8 @@ contract AntParts {
         partCounts[3] = new uint8[](5);
         partRarities[4] = [0, 2, 3];
         partCounts[4] = new uint8[](3);
-        partRarities[5] = [0, 3];
-        partCounts[5] = new uint8[](2);
+        partRarities[5] = [0, 3, 5];
+        partCounts[5] = new uint8[](3);
         partRarities[6] = [4, 3, 0];
         partCounts[6] = new uint8[](3);
         partRarities[7] = [4, 4, 4, 0, 1, 4, 4, 3, 3, 1, 3, 2, 5, 6, 6, 6];
@@ -41,23 +41,21 @@ contract AntParts {
         partCounts[13] = new uint8[](16);
         partRarities[14] = [4, 3, 0, 5];
         partCounts[14] = new uint8[](4);
-        partRarities[15] = [0, 5];
-        partCounts[15] = new uint8[](2);
-        partRarities[16] = [0, 5, 5, 5];
-        partCounts[16] = new uint8[](4);
-        partRarities[17] = [0, 5];
-        partCounts[17] = new uint8[](2);
-        maxStockByRarity = [420, 42, 5, 2];
-        priceScaleByRarity = [1, 2, 6, 15, 45, 150];
+        partRarities[15] = [0, 5, 5, 5];
+        partCounts[15] = new uint8[](4);
+        partRarities[16] = [0, 5];
+        partCounts[16] = new uint8[](2);
+        maxStockByRarity = [420, 42, 7, 2];
+        priceScaleByRarity = [1, 2, 6, 18, 100, 1000];
     }
 
-    function _getRarities(uint[18] memory _dna) internal view returns (uint[18] memory rarities) {
-        for (uint i; i < 18; ++i) {
+    function _getRarities(uint[17] memory _dna) internal view returns (uint[17] memory rarities) {
+        for (uint i; i < 17; ++i) {
             rarities[i] = partRarities[i][_dna[i]];
         }
     }
 
-    function _getDnaPrice(uint[18] memory _dna, uint _discountIndex) internal view returns (uint price) {
+    function _getDnaPrice(uint[17] memory _dna, uint _discountIndex) internal view returns (uint price) {
         if (_dna[3] == 2 || _dna[3] == 4) {
             require(_dna[0] != 2, "EOD and gas masks incompatible!");
             require(_dna[1] == 0, "Gas mask incompatible with optical!");
@@ -74,7 +72,7 @@ contract AntParts {
         }
         uint epicCount = 0;
         uint legendaryCount = 0;
-        for (uint i; i < 18; ++i) {
+        for (uint i; i < 17; ++i) {
             require(_dna[i] < partCounts[i].length, "Invalid DNA!");
             uint partRarity = partRarities[i][_dna[i]];
             if (partRarity == 0) {
@@ -106,8 +104,8 @@ contract AntParts {
         price += basePrice;
     }
 
-    function _incrementCounts(uint[18] memory _dna) internal {
-        for (uint i; i < 18; ++i) {
+    function _incrementCounts(uint[17] memory _dna) internal {
+        for (uint i; i < 17; ++i) {
             if (partRarities[i][_dna[i]] > 2) {
                 partCounts[i][_dna[i]]++;
             }
