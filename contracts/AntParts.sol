@@ -3,130 +3,59 @@
 pragma solidity ^0.8.0;
 
 contract AntParts {
-
-    uint8[][17] partRarities;
-    uint16[][17] partCounts;
-    uint16[4] maxStockByRarity;
-    uint16[6] priceScaleByRarity;
-    uint64 minPartFee = .0009 ether;
+    uint8[40][18] partRarities;
+    uint8[40][18] partCounts;
+    uint8[18] layerCount = [3, 40, 14, 14, 12, 5, 9, 4, 39, 4, 34, 7, 10, 24, 22, 5, 25, 4];
+    uint8[6] maxStockByRarity = [200, 84, 36, 18, 9, 3];
+    uint16[8] priceScaleByRarity = [3, 5, 12, 24, 150, 360, 1050, 1600];
 
     constructor() {
-        partRarities[0] = [0, 3, 4, 1, 3, 3, 4, 1, 1, 2, 2, 3, 2, 2, 2, 5, 5, 5, 5];
-        partCounts[0] = new uint8[](19);
-        partRarities[1] = [0, 1, 3, 4, 2, 5, 5, 5];
-        partCounts[1] = new uint8[](8);
-        partRarities[2] = [0, 3, 4, 5, 5];
-        partCounts[2] = new uint8[](5);
-        partRarities[3] = [0, 3, 4, 5, 6];
-        partCounts[3] = new uint8[](5);
-        partRarities[4] = [0, 2, 3];
-        partCounts[4] = new uint8[](3);
-        partRarities[5] = [0, 3, 5];
-        partCounts[5] = new uint8[](3);
-        partRarities[6] = [4, 3, 0];
-        partCounts[6] = new uint8[](3);
-        partRarities[7] = [4, 4, 4, 0, 1, 4, 4, 3, 3, 1, 3, 2, 5, 6, 6, 6];
-        partCounts[7] = new uint8[](16);
-        partRarities[8] = [0, 4, 3, 2];
-        partCounts[8] = new uint8[](4);
-        partRarities[9] = [4, 2, 3, 3, 0, 0, 4, 1, 1, 3, 3, 3, 3, 5, 6, 6, 6];
-        partCounts[9] = new uint8[](17);
-        partRarities[10] = [4, 0];
-        partCounts[10] = new uint8[](2);
-        partRarities[11] = [4, 0];
-        partCounts[11] = new uint8[](2);
-        partRarities[12] = [0, 4, 2, 3, 4, 3, 4, 3, 3, 3, 4, 5, 6, 6, 6];
-        partCounts[12] = new uint8[](15);
-        partRarities[13] = [0, 3, 4, 3, 3, 3, 4, 3, 4, 3, 3, 3, 3, 3, 3, 4];
-        partCounts[13] = new uint8[](16);
-        partRarities[14] = [4, 3, 0, 5];
-        partCounts[14] = new uint8[](4);
-        partRarities[15] = [0, 5, 5, 5];
-        partCounts[15] = new uint8[](4);
-        partRarities[16] = [0, 5];
-        partCounts[16] = new uint8[](2);
-        maxStockByRarity = [420, 42, 7, 2];
-        priceScaleByRarity = [1, 2, 6, 18, 100, 1000];
+        partRarities[0] = [0,1,3];
+        partRarities[1] = [0,0,0,0,0,0,1,1,2,2,2,2,3,3,3,3,3,4,4,4,4,5,5,5,5,5,5,6,6,6,6,6,6,6,6,6,7,7,7,8];
+        partRarities[2] = [0,1,1,2,2,2,3,3,4,4,4,6,7,8];
+        partRarities[3] = [0,1,1,2,2,3,3,4,4,5,5,6,7,7];
+        partRarities[4] = [0,0,1,1,2,2,2,3,4,4,4,5];
+        partRarities[5] = [0,2,3,4,5];
+        partRarities[6] = [0,0,0,1,2,2,3,4,6];
+        partRarities[7] = [0,0,1,2];
+        partRarities[8] = [0,0,1,1,1,1,2,2,2,2,3,3,3,3,3,4,4,4,4,4,4,5,5,5,5,5,5,5,6,6,6,6,6,6,7,7,7,7,7];
+        partRarities[9] = [0,3,4,5];
+        partRarities[10] = [0,0,0,1,1,1,2,2,2,3,3,3,3,4,4,4,4,4,5,5,5,6,6,6,6,6,6,6,6,6,7,7,7,8];
+        partRarities[11] = [0,0,1,2,3,4,5];
+        partRarities[12] = [0,1,1,2,4,5,5,5,5,5];
+        partRarities[13] = [0,0,0,1,1,2,2,3,3,4,4,5,5,5,5,5,6,6,6,7,7,7,7,8];
+        partRarities[14] = [0,0,1,1,1,2,2,2,3,3,3,3,3,4,4,4,5,6,7,7,7,8];
+        partRarities[15] = [0,3,3,4,4];
+        partRarities[16] = [0,1,1,1,1,2,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,6,6,6,6];
+        partRarities[17] = [0,3,4,6];
     }
 
-    function _getRarities(uint[17] memory _dna) internal view returns (uint[17] memory rarities) {
-        for (uint i; i < 17; ++i) {
-            rarities[i] = partRarities[i][_dna[i]];
-        }
-    }
-
-    function _getDnaPrice(uint[17] memory _dna, uint _discountIndex) internal view returns (uint price) {
-        if (_dna[3] == 2 || _dna[3] == 4) {
-            require(_dna[0] != 2, "EOD and gas masks incompatible!");
-            require(_dna[1] == 0, "Gas mask incompatible with optical!");
-            require(_dna[2] == 0, "Gas mask incompatible with mouth!");
-            require(_dna[4] == 0, "Gas mask incompatible with face!");
-
-        }
-        if (_dna[0] == 2 || _dna[9] == 0) {
-            require(_dna[0] == 2, "EOD must be paired!");
-            require(_dna[9] == 0, "EOD must be paired!");
-            require(_dna[5] == 0, "EOD and shemagh incomaptible!");
-            require(_dna[2] == 0, "EOD and mouth incomaptible!");
-            require(_dna[8] == 0, "EOD and bandolier incomaptible!");
-        }
-        uint epicCount = 0;
-        uint legendaryCount = 0;
-        for (uint i; i < 17; ++i) {
-            require(_dna[i] < partCounts[i].length, "Invalid DNA!");
+    function _getDnaPrice(uint[18] memory _dna, uint _discountIndex) internal view returns (uint price) {
+        uint traitPoints;
+        uint minPartFee = .0003 ether;
+        for (uint i; i < 18; ++i) {
+            require(_dna[i] < layerCount[i], "Invalid DNA!");
             uint partRarity = partRarities[i][_dna[i]];
-            if (partRarity == 0) {
-                continue;
-            }
-            if (partRarity > 2 ) {
+            if (partRarity == 0) continue;
+            if (partRarity > 2) {
                 require((maxStockByRarity[partRarity - 3] - partCounts[i][_dna[i]]) > 0, "Part is sold out!");
-                if (partRarity > 4) {
-                    if (partRarity > 5) {
-                        legendaryCount++;
-                        epicCount++;
-                    } else {
-                        epicCount++;
-                    }
-                }
+                if (partRarity == 5) ++traitPoints;
+                else if (5 < partRarity) traitPoints += (partRarity - 3);
             }
-            uint partPrice = minPartFee * priceScaleByRarity[partRarity - 1];
-            if (_discountIndex > 0) {
-                partPrice = partPrice * (100 - 10 * _discountIndex) / 100;
-            }
-            price += partPrice;
+            price += (minPartFee * priceScaleByRarity[partRarity - 1]);
         }
-        require(epicCount < 3, "2 epic or greater traits max!");
-        require(legendaryCount < 2, "1 legendary trait max!");
-        uint basePrice = minPartFee * 11;
-        if (_discountIndex > 0) {
-            basePrice = basePrice * (100 - 10 * _discountIndex) / 100;
-        }
-        price += basePrice;
-    }
-
-    function _incrementCounts(uint[17] memory _dna) internal {
-        for (uint i; i < 17; ++i) {
-            if (partRarities[i][_dna[i]] > 2) {
-                partCounts[i][_dna[i]]++;
-            }
-        }
+        uint limit;
+        if (_discountIndex < 3) limit = 110;
+        else if (_discountIndex < 5) limit = 108 + _discountIndex;
+        else limit = 115;
+        require((limit - traitPoints) > 100, "Too many of top 4 rarities!");
+        price += (minPartFee * 33);
+        if (0 < _discountIndex) price = price * ((_discountIndex < 5) ? (100 - 10 * _discountIndex) : 20) / 100;
     }
 
     function getPartInventory(uint _secIndex, uint _partIndex) external view returns (uint inStock) {
         uint rarity = partRarities[_secIndex][_partIndex];
-        if (rarity > 2) {
-            inStock = maxStockByRarity[rarity - 3] - partCounts[_secIndex][_partIndex];
-        } else {
-            inStock = 10000;
-        }
-    }
-
-    function getRarityPrices(uint _discountIndex) external view returns (uint[6] memory prices) {
-        require(_discountIndex < 6, "Discount index out of bounds!");
-        uint minFee = minPartFee;
-        uint16[6] memory priceScale = priceScaleByRarity;
-        for (uint i; i < 6; ++i) {
-            prices[i] = priceScale[i] * minFee * (100 - 10 * _discountIndex) / 100;
-        }
+        if (rarity > 2) inStock = maxStockByRarity[rarity - 3] - partCounts[_secIndex][_partIndex];
+        else inStock = 10000;
     }
 }

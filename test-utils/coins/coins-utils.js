@@ -35,9 +35,6 @@ const buyFounderCoin = async (_coinsInstance, _sendingAccount, _founderValue, _s
     await assertFounder(_coinsInstance, _sendingAccount, _founderValue, true, false);
     await assertCounters(_coinsInstance, counters[0].toNumber() + 1, counters[1].toNumber(), counters[2].toNumber(), counters[3].toNumber(), counters[4].toNumber());
     await assertCoin(_coinsInstance, counters[0].toNumber(), _totalValue, 4, _sendingAccount);
-    // const balanceAfter = await getBalance(_sendingAccount);
-    // const gasFee = balanceAfter + fromWei(_totalValue) - balanceBefore;
-    // console.log("Founder coin bought, gas fee: " + gasFee);
 }
 
 // 2-4 asserts
@@ -62,9 +59,6 @@ const buyCoinAllAsserts = async (_coinsInstance, _sendingAccount, _sendingValue,
     }
     await assertCoin(_coinsInstance, _id, _sendingValue, _color, _sendingAccount);
     await assertCounters(_coinsInstance, counters[0], counters[1], counters[2], counters[3], counters[4]);
-    // const balanceAfter = await getBalance(_sendingAccount);
-    // const gasFee = balanceAfter + fromWei(_sendingValue) - balanceBefore;
-    // console.log("Coin bought, gas fee: " + gasFee);
 }
 
 const logContractState = (_stepName, _prices, _counts, _balance) => {

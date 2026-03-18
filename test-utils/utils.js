@@ -1,6 +1,6 @@
 const toWei = (_value) => {
     // const textValue = _textValue.slice(0, 12);
-    return web3.utils.toWei(_value.toString());
+    return ethers.utils.toWei(_value.toString());
 }
 
 const fromWei = (_value) => {
