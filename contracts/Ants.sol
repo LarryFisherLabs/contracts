@@ -107,10 +107,11 @@ contract Ants is ERC721J, AntParts {
         uint bools = state >> 48;
         // require((bools % 10) == 1, "Ant owner must unlock!");
         // require(_sender == ownerOf(_antId), "Not owner!");
-        // require(bools > 9, "Ant is rented!");
+        // require(bools < 10, "Cannot change DNA while ant is rented out!");
         // require((uint48(state) + _coolDownDuration) < block.timestamp, "Ant state changed too recently!");
-        require((msg.sender == commander) && ((bools % 10) == 1) && (_sender == ownerOf(_antId)) && (bools > 9) && ((uint48(state) + _coolDownDuration) < block.timestamp));
+        require((msg.sender == commander) && ((bools % 10) == 1) && (_sender == ownerOf(_antId)) && (bools < 10) && ((uint48(state) + _coolDownDuration) < block.timestamp));
         antStates[_antId] = (bools << 48) + uint48(block.timestamp);
+        delete _tokenApprovals[_antId]; // Clear stale marketplace approvals when DNA changes
         antDnas[_antId] = uint120(_newRawDna);
         emit DnaChange(_antId, _newRawDna);
     }
